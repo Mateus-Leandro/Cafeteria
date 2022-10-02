@@ -16,7 +16,7 @@ public class TableModelStore extends AbstractTableModel {
 	 */
 	SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 	private static final long serialVersionUID = 1L;
-	private String columns[] = { "Nº Loja", "Razão", "CNPJ", "Rua", "Número", "Cidade", "Data Criação" };
+	private String columns[] = { "Nº Loja", "Razão", "CNPJ", "Rua", "Número", "Cidade", "Bairro", "Data Criação" };
 	private ArrayList<Store> stores;
 	private final int COLUMN_NUMBER_STORE = 0;
 	private final int COLUMN_NAME = 1;
@@ -24,7 +24,8 @@ public class TableModelStore extends AbstractTableModel {
 	private final int COLUMN_STREET = 3;
 	private final int COLUMN_NUMBER_ADDRESS = 4;
 	private final int COLUMN_CITY = 5;
-	private final int COLUMN_CREATION_DATE = 6;
+	private final int COLUMN_DISTRICT = 6;
+	private final int COLUMN_CREATION_DATE = 7;
 
 	public TableModelStore(ArrayList<Store> stores) {
 		this.stores = stores;
@@ -58,7 +59,7 @@ public class TableModelStore extends AbstractTableModel {
 		switch (columnIndex) {
 
 			case COLUMN_NUMBER_STORE:
-				return int.class;
+				return Integer.class;
 			case COLUMN_NAME:
 				return String.class;
 			case COLUMN_CNPJ:
@@ -66,8 +67,10 @@ public class TableModelStore extends AbstractTableModel {
 			case COLUMN_STREET:
 				return String.class;
 			case COLUMN_NUMBER_ADDRESS:
-				return Integer.class;
+				return String.class;
 			case COLUMN_CITY:
+				return String.class;
+			case COLUMN_DISTRICT:
 				return String.class;
 			case COLUMN_CREATION_DATE:
 				return Date.class;
@@ -89,9 +92,11 @@ public class TableModelStore extends AbstractTableModel {
 			case COLUMN_STREET:
 				return store.getStreet();
 			case COLUMN_NUMBER_ADDRESS:
-				return store.getNumber();
+				return store.getStreetNumber();
 			case COLUMN_CITY:
 				return store.getCity();
+			case COLUMN_DISTRICT:
+				return store.getDistrict();
 			case COLUMN_CREATION_DATE:
 				return store.getCreationDate();
 		}
@@ -99,19 +104,20 @@ public class TableModelStore extends AbstractTableModel {
 		return null;
 	}
 
-	public void addStore(Store new_store) {
+	public void addStore(Store new_store, JTable tableStores) {
 		this.stores.add(new_store);
-		this.fireTableDataChanged();
+		reloadTable(tableStores, stores);
 	}
 
-	public void removeStore(Store removed_store) {
+	public void removeStore(Store removed_store, JTable tableStores) {
 		this.stores.remove(removed_store);
-		this.fireTableDataChanged();
+		reloadTable(tableStores, stores);
 	}
 
 	public void reloadTable(JTable table, ArrayList<Store> stores) {
 		TableModelStore table_model = new TableModelStore(stores);
 		table.setModel(table_model);
+		this.fireTableDataChanged();
 	}
 
 }

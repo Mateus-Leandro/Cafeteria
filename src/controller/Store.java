@@ -7,7 +7,7 @@ public class Store {
 	private String name;
 	private String cnpj;
 	private String street;
-	private Integer number;
+	private String streetNumber;
 	private String district;
 	private String city;
 	private Date creationDate;
@@ -16,14 +16,14 @@ public class Store {
 	}
 	
 	
-	public Store(int id, String name, String cnpj, String street, Integer number, String district, String city,
+	public Store(int id, String name, String cnpj, String street, String streetNumber, String district, String city,
 			Date creationDate) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.cnpj = cnpj;
 		this.street = street;
-		this.number = number;
+		this.streetNumber = streetNumber;
 		this.district = district;
 		this.city = city;
 		this.creationDate = creationDate;
@@ -48,11 +48,11 @@ public class Store {
 	public void setStreet(String street) {
 		this.street = street;
 	}
-	public Integer getNumber() {
-		return number;
+	public String getStreetNumber() {
+		return streetNumber;
 	}
-	public void setNumber(Integer number) {
-		this.number = number;
+	public void setStreetNumber(String streetNumber) {
+		this.streetNumber = streetNumber;
 	}
 	public String getDistrict() {
 		return district;
@@ -79,4 +79,18 @@ public class Store {
 		this.id = id;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Store other = (Store) obj;
+		if (id != other.id)
+			return false;
+		return true;
+	}
+	
 }

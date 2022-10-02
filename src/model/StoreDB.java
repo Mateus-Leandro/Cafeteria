@@ -29,7 +29,7 @@ public class StoreDB {
 				store.setName(rs.getString("name"));
 				store.setCnpj(rs.getString("cnpj"));
 				store.setStreet(rs.getString("street"));
-				store.setNumber(rs.getInt("number"));
+				store.setStreetNumber(rs.getString("number"));
 				store.setDistrict(rs.getString("district"));
 				store.setCity(rs.getString("city"));
 				store.setCreationDate(rs.getDate("creationDate"));
@@ -57,13 +57,13 @@ public class StoreDB {
 		try {
 			conn.setAutoCommit(false);
 			ps = conn.prepareStatement(
-					"INSERTO INTO db_cafeteria.tb_store "
+					"INSERT INTO db_cafeteria.tb_store "
 					+ "(name, cnpj, street, number, district, city, creationDate) "
-					+ "VALUES (?, ?, ?, ?, ?, ?, ?)");
+					+ "VALUES (?, ?, ?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
 			ps.setString(1, storeIncluded.getName());
 			ps.setString(2, storeIncluded.getCnpj());
 			ps.setString(3, storeIncluded.getStreet());
-			ps.setInt(4, storeIncluded.getNumber());
+			ps.setString(4, storeIncluded.getStreetNumber());
 			ps.setString(5, storeIncluded.getDistrict());
 			ps.setString(6, storeIncluded.getCity());
 			ps.setDate(7, new java.sql.Date(System.currentTimeMillis()));
@@ -104,7 +104,7 @@ public class StoreDB {
 			ps.setString(1, storeUpdated.getName());
 			ps.setString(2, storeUpdated.getCnpj());
 			ps.setString(3, storeUpdated.getStreet());
-			ps.setInt(4, storeUpdated.getNumber());
+			ps.setString(4, storeUpdated.getStreetNumber());
 			ps.setString(5, storeUpdated.getDistrict());
 			ps.setString(6, storeUpdated.getCity());
 			ps.setInt(7, storeUpdated.getId());
