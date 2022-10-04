@@ -72,8 +72,9 @@ public class Panel_store extends JPanel {
 	private Store selectedStore = new Store();
 	private Store storeMounted = new Store();
 
-	public Panel_store() {
+	public Panel_store(ArrayList<Store> stores) {
 		setLayout(null);
+		this.stores = stores;
 
 		separatorTitle = new JSeparator();
 		separatorTitle.setBounds(10, 49, 857, 3);
@@ -214,7 +215,6 @@ public class Panel_store extends JPanel {
 		separatorAddress1.setBounds(222, 125, 645, 3);
 		add(separatorAddress1);
 
-		stores = searchStores();
 		tableModel = new TableModelStore(stores);
 		tableStores = new JTable(tableModel);
 		tableStores.setBounds(10, 404, 722, 125);

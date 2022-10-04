@@ -33,6 +33,7 @@ public class TextFieldFormat extends PlainDocument {
 					if (validInteger(str)) {
 						super.insertString(offset, str, attr);
 					}
+					break;
 				default:
 					super.insertString(offset, str, attr);
 			}

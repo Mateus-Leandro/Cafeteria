@@ -92,5 +92,12 @@ public class Store {
 			return false;
 		return true;
 	}
+
+
+	@Override
+	public String toString() {
+		return id + " - " + name ;
+	}
+	
 	
 }
