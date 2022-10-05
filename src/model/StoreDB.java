@@ -14,6 +14,7 @@ public class StoreDB {
 	private ResultSet rs;
 	private DB db = new DB();
 	private Store store;
+	private StoreProductDB storeProductDb = new StoreProductDB();
 
 	public ArrayList<Store> searchStores(ArrayList<Store> storesSearched) {
 		storesSearched = new ArrayList<Store>();
@@ -56,10 +57,9 @@ public class StoreDB {
 
 		try {
 			conn.setAutoCommit(false);
-			ps = conn.prepareStatement(
-					"INSERT INTO db_cafeteria.tb_store "
-					+ "(name, cnpj, street, number, district, city, creationDate) "
-					+ "VALUES (?, ?, ?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			ps = conn.prepareStatement("INSERT INTO db_cafeteria.tb_store "
+					+ "(name, cnpj, street, number, district, city, creationDate) " + "VALUES (?, ?, ?, ?, ?, ?, ?)",
+					PreparedStatement.RETURN_GENERATED_KEYS);
 			ps.setString(1, storeIncluded.getName());
 			ps.setString(2, storeIncluded.getCnpj());
 			ps.setString(3, storeIncluded.getStreet());
@@ -71,8 +71,8 @@ public class StoreDB {
 			ps.execute();
 			conn.commit();
 			rs = ps.getGeneratedKeys();
-			
-			if(rs.next()) {
+
+			if (rs.next()) {
 				storeIncluded.setId(rs.getInt(1));
 			}
 
@@ -91,16 +91,14 @@ public class StoreDB {
 		}
 		return storeIncluded;
 	}
-	
+
 	public boolean updateStore(Store storeUpdated) {
 		conn = db.getConnection();
-		
+
 		try {
 			conn.setAutoCommit(false);
-			ps = conn.prepareStatement(
-					"UPDATE db_cafeteria.tb_store "
-					+ "SET name = ?, cnpj = ?, street = ?, number = ?, district = ?, city = ? "
-					+ "WHERE id = ?");
+			ps = conn.prepareStatement("UPDATE db_cafeteria.tb_store "
+					+ "SET name = ?, cnpj = ?, street = ?, number = ?, district = ?, city = ? " + "WHERE id = ?");
 			ps.setString(1, storeUpdated.getName());
 			ps.setString(2, storeUpdated.getCnpj());
 			ps.setString(3, storeUpdated.getStreet());
@@ -108,11 +106,11 @@ public class StoreDB {
 			ps.setString(5, storeUpdated.getDistrict());
 			ps.setString(6, storeUpdated.getCity());
 			ps.setInt(7, storeUpdated.getId());
-			
+
 			ps.execute();
 			conn.commit();
 			return true;
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			try {
@@ -127,19 +125,20 @@ public class StoreDB {
 			DB.closeConnection(conn);
 		}
 	}
-	
+
 	public boolean deleteStore(int numberStore) {
 		conn = db.getConnection();
-		
+
 		try {
-			conn.setAutoCommit(false);
-			ps = conn.prepareStatement("DELETE FROM db_cafeteria.tb_store WHERE id = ?");
-			ps.setInt(1, numberStore);
-			
-			ps.execute();
-			conn.commit();
-			return true;
-			
+			if (storeProductDb.deleteProductStore(null, numberStore, conn)) {
+				conn.setAutoCommit(false);
+				ps = conn.prepareStatement("DELETE FROM db_cafeteria.tb_store WHERE id = ?");
+				ps.setInt(1, numberStore);
+
+				ps.execute();
+				conn.commit();
+				return true;
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			try {
@@ -153,6 +152,7 @@ public class StoreDB {
 			DB.closeResultSet(rs);
 			DB.closeConnection(conn);
 		}
+		return false;
 	}
 
 }

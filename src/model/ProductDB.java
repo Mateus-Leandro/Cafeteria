@@ -16,6 +16,7 @@ public class ProductDB {
 	private ResultSet rs2;
 	private DB db = new DB();
 	private Product product;
+	private StoreProductDB storeProductDb = new StoreProductDB();
 
 	public ArrayList<Product> searchAllProducts(ArrayList<Product> productsSearched, Integer idStore) {
 		productsSearched = new ArrayList<Product>();
@@ -112,7 +113,7 @@ public class ProductDB {
 	public boolean updateProduct(Product productUpdated, Integer idStore) {
 		conn = db.getConnection();
 		boolean saved = false;
-		if (deleteProductStore(productUpdated.getId(), idStore)) {
+		if (storeProductDb.deleteProductStore(productUpdated.getId(), idStore, conn)) {
 			saved = recordStock(productUpdated, idStore);
 			db.closeStatement(ps);
 		}
@@ -123,7 +124,7 @@ public class ProductDB {
 	public boolean deleteProduct(int idProduct) {
 		conn = db.getConnection();
 
-		if (deleteProductStore(idProduct, null)) {
+		if (storeProductDb.deleteProductStore(idProduct, null, conn)) {
 			try {
 				conn.setAutoCommit(false);
 				ps = conn.prepareStatement("DELETE FROM db_cafeteria.tb_product WHERE id = ?");
@@ -148,34 +149,6 @@ public class ProductDB {
 		}
 		return false;
 
-	}
-
-	public boolean deleteProductStore(int idProduct, Integer idStore) {
-		try {
-			conn.setAutoCommit(false);
-			if (idStore == null) {
-				ps = conn.prepareStatement("DELETE FROM db_cafeteria.tb_store_product WHERE idProduct = ?");
-				ps.setInt(1, idProduct);
-			} else {
-				ps = conn.prepareStatement(
-						"DELETE FROM db_cafeteria.tb_store_product WHERE idProduct = ? AND idStore = ?");
-				ps.setInt(1, idProduct);
-				ps.setInt(2, idStore);
-			}
-
-			ps.execute();
-			conn.commit();
-			return true;
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			try {
-				conn.rollback();
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-			}
-			return false;
-		}
 	}
 
 	public boolean recordStock(Product product, int idStore) {
