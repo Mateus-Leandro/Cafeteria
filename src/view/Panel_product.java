@@ -7,7 +7,6 @@ import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -535,6 +534,7 @@ public class Panel_product extends JPanel {
 	}
 
 	public Product productMount() {
+		productMounted = new Product();
 		Integer id = null;
 		String name = null;
 		String barCode = null;
@@ -591,6 +591,7 @@ public class Panel_product extends JPanel {
 				tableModel.addProduct(product, tableProducts);
 				break;
 		}
+		tableModel.fireTableDataChanged();
 		formatTable(tableProducts);
 	}
 }
