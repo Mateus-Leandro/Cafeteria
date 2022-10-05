@@ -36,8 +36,10 @@ public class ProductDB {
 
 				// Busca estoque do produto.
 				if (!nullStore) {
-					ps2 = conn.prepareStatement("SELECT inventory FROM tb_store_product WHERE idStore = ?");
+					ps2 = conn.prepareStatement(
+							"SELECT inventory FROM tb_store_product WHERE idStore = ? AND idProduct = ?");
 					ps2.setInt(1, idStore);
+					ps2.setInt(2, product.getId());
 					rs2 = ps2.executeQuery();
 					if (rs2.next()) {
 						product.setInventory(rs2.getInt("inventory"));
@@ -119,12 +121,14 @@ public class ProductDB {
 		try {
 			conn.setAutoCommit(false);
 			ps = conn.prepareStatement("UPDATE db_cafeteria.tb_product "
-					+ "SET name = ?, barCode = ?, price = ?, manufacturerDate = ?, validationDate = ?");
+					+ "SET name = ?, barCode = ?, price = ?, manufacturerDate = ?, validationDate = ?"
+					+ "WHERE id = ?");
 			ps.setString(1, productUpdated.getName());
 			ps.setString(2, productUpdated.getBarCode());
 			ps.setDouble(3, productUpdated.getPrice());
 			ps.setDate(4, new java.sql.Date(productUpdated.getManufacturerDate().getTime()));
 			ps.setDate(5, new java.sql.Date(productUpdated.getValidationDate().getTime()));
+			ps.setInt(6, productUpdated.getId());
 			ps.execute();
 			conn.commit();
 
