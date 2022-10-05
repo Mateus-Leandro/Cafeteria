@@ -479,6 +479,7 @@ public class Panel_store extends JPanel {
 	}
 
 	public Store storeMount() {
+		storeMounted = new Store();
 		if (!txtNumberStore.getText().isBlank()) {
 			storeMounted.setId(Integer.parseInt(txtNumberStore.getText()));
 		}

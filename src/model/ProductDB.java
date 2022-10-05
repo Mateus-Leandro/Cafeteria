@@ -89,14 +89,8 @@ public class ProductDB {
 			}
 
 			// Grava estoque
-			if (productIncluded.getInventory() != null && idSelectedStore != null) {
-				ps = conn.prepareStatement("INSERT INTO db_cafeteria.tb_store_product (idStore, idProduct, inventory) "
-						+ "VALUES (?, ?, ?)");
-				ps.setInt(1, idSelectedStore);
-				ps.setInt(2, productIncluded.getId());
-				ps.setInt(3, productIncluded.getInventory());
-				ps.execute();
-				conn.commit();
+			if (idSelectedStore != null) {
+				recordStock(productIncluded, idSelectedStore);
 			}
 
 		} catch (Exception e) {
@@ -117,51 +111,19 @@ public class ProductDB {
 
 	public boolean updateProduct(Product productUpdated, Integer idStore) {
 		conn = db.getConnection();
-
-		try {
-			conn.setAutoCommit(false);
-			ps = conn.prepareStatement("UPDATE db_cafeteria.tb_product "
-					+ "SET name = ?, barCode = ?, price = ?, manufacturerDate = ?, validationDate = ?"
-					+ "WHERE id = ?");
-			ps.setString(1, productUpdated.getName());
-			ps.setString(2, productUpdated.getBarCode());
-			ps.setDouble(3, productUpdated.getPrice());
-			ps.setDate(4, new java.sql.Date(productUpdated.getManufacturerDate().getTime()));
-			ps.setDate(5, new java.sql.Date(productUpdated.getValidationDate().getTime()));
-			ps.setInt(6, productUpdated.getId());
-			ps.execute();
-			conn.commit();
-
-			if (idStore != null) {
-				ps = conn.prepareStatement("UPDATE db_cafeteria.tb_store_product " + "SET inventory = ? "
-						+ "WHERE idStore = ? AND idProduct = ?");
-				ps.setInt(1, productUpdated.getInventory());
-				ps.setInt(2, idStore);
-				ps.setInt(3, productUpdated.getId());
-				ps.execute();
-				conn.commit();
-			}
-
-			return true;
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			try {
-				conn.rollback();
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-			}
-			return false;
-		} finally {
-			DB.closeStatement(ps);
-			DB.closeConnection(conn);
+		boolean saved = false;
+		if (deleteProductStore(productUpdated.getId(), idStore)) {
+			saved = recordStock(productUpdated, idStore);
+			db.closeStatement(ps);
 		}
+		db.closeConnection(conn);
+		return saved;
 	}
 
 	public boolean deleteProduct(int idProduct) {
 		conn = db.getConnection();
 
-		if (deleteProductStore(idProduct)) {
+		if (deleteProductStore(idProduct, null)) {
 			try {
 				conn.setAutoCommit(false);
 				ps = conn.prepareStatement("DELETE FROM db_cafeteria.tb_product WHERE id = ?");
@@ -188,11 +150,18 @@ public class ProductDB {
 
 	}
 
-	public boolean deleteProductStore(int idProduct) {
+	public boolean deleteProductStore(int idProduct, Integer idStore) {
 		try {
 			conn.setAutoCommit(false);
-			ps = conn.prepareStatement("DELETE FROM db_cafeteria.tb_store_product WHERE idProduct = ?");
-			ps.setInt(1, idProduct);
+			if (idStore == null) {
+				ps = conn.prepareStatement("DELETE FROM db_cafeteria.tb_store_product WHERE idProduct = ?");
+				ps.setInt(1, idProduct);
+			} else {
+				ps = conn.prepareStatement(
+						"DELETE FROM db_cafeteria.tb_store_product WHERE idProduct = ? AND idStore = ?");
+				ps.setInt(1, idProduct);
+				ps.setInt(2, idStore);
+			}
 
 			ps.execute();
 			conn.commit();
@@ -209,4 +178,19 @@ public class ProductDB {
 		}
 	}
 
+	public boolean recordStock(Product product, int idStore) {
+		try {
+			ps = conn.prepareStatement(
+					"INSERT INTO db_cafeteria.tb_store_product (idStore, idProduct, inventory) VALUES (?, ?, ?)");
+			ps.setInt(1, idStore);
+			ps.setInt(2, product.getId());
+			ps.setInt(3, product.getInventory());
+			ps.execute();
+			conn.commit();
+			return true;
+		} catch (SQLException e) {
+			return false;
+		}
+
+	}
 }
