@@ -23,16 +23,7 @@ public class ProductDB {
 		boolean nullStore = idStore == null;
 
 		try {
-			if (nullStore) {
-				ps = conn.prepareStatement("SELECT * FROM tb_product");
-			} else {
-				ps = conn.prepareStatement(
-						"SELECT tb_product.id, tb_product.name, barCode, price, tb_store_product.inventory, manuFacturerDate, validationDate"
-								+ " FROM tb_product LEFT JOIN tb_store_product"
-								+ " ON tb_product.id = tb_store_product.idProduct"
-								+ " WHERE tb_store_product.idStore = ?");
-				ps.setInt(1, idStore);
-			}
+			ps = conn.prepareStatement("SELECT * FROM tb_product");
 			rs = ps.executeQuery();
 
 			while (rs.next()) {
@@ -41,8 +32,16 @@ public class ProductDB {
 				product.setName(rs.getString("name"));
 				product.setBarCode(rs.getString("barCode"));
 				product.setPrice(rs.getDouble("price"));
+				product.setInventory(0);
+
+				// Busca estoque do produto.
 				if (!nullStore) {
-					product.setInventory(rs.getInt("inventory"));
+					ps2 = conn.prepareStatement("SELECT inventory FROM tb_store_product WHERE idStore = ?");
+					ps2.setInt(1, idStore);
+					rs2 = ps2.executeQuery();
+					if (rs2.next()) {
+						product.setInventory(rs2.getInt("inventory"));
+					}
 				}
 				product.setManufacturerDate(rs.getDate("manufacturerDate"));
 				product.setValidationDate(rs.getDate("validationDate"));

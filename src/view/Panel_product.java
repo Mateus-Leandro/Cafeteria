@@ -2,8 +2,12 @@ package view;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -61,7 +65,7 @@ public class Panel_product extends JPanel {
 	private ArrayList<Product> products = new ArrayList<Product>();
 	private TableModelProduct tableModel;
 	private ProductDB productDB = new ProductDB();
-	private Product selectedProduct = new Product();
+	private Product selectedProduct;
 	private Product productMounted = new Product();
 	private JLabel lblBarCode;
 	private JTextField txtBarCode;
@@ -82,7 +86,8 @@ public class Panel_product extends JPanel {
 	private JComboBox<Store> cbxSelectedStore;
 	private Store selectedStore;
 	private JLabel lblSelectedStore;
-	TextFieldFormat tf;
+	private DecimalFormat df = new DecimalFormat(",##0.00");
+	private TextFieldFormat tf;
 
 	public Panel_product(ArrayList<Store> store) {
 		this.stores = store;
@@ -161,6 +166,7 @@ public class Panel_product extends JPanel {
 		add(separatorInfoProduct);
 
 		cbxSelectedStore = new JComboBox<Store>();
+
 		if (!stores.isEmpty()) {
 			for (Store s : stores) {
 				cbxSelectedStore.addItem(s);
@@ -363,6 +369,21 @@ public class Panel_product extends JPanel {
 		lblSelectedStore.setFont(new Font("Tahoma", Font.BOLD, 14));
 		lblSelectedStore.setBounds(552, 69, 120, 17);
 		add(lblSelectedStore);
+
+		cbxSelectedStore.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent changedSelectedStore) {
+				if (changedSelectedStore.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+					selectedStore = (Store) cbxSelectedStore.getSelectedItem();
+					idSelectedStore = selectedStore.getId();
+					searchproducts();
+					tableModel.reloadTable(tableProducts, products);
+					formatTable(tableProducts);
+					if (selectedProduct != null) {
+						selectProductTable(selectedProduct.getId());
+					}
+				}
+			}
+		});
 	}
 
 	public void editProduct() {
@@ -415,6 +436,7 @@ public class Panel_product extends JPanel {
 		txtNameProduct.setText(null);
 		txtBarCode.setText(null);
 		txtPrice.setText(null);
+		txtInventory.setText(null);
 		jdcManufacturerDate.setDate(null);
 		jdcValidationDate.setDate(null);
 
@@ -422,6 +444,7 @@ public class Panel_product extends JPanel {
 		txtNameProduct.setBorder(new LineBorder(Color.lightGray));
 		jdcValidationDate.setBorder(new LineBorder(Color.lightGray));
 		jdcManufacturerDate.setBorder(new LineBorder(Color.lightGray));
+		selectedProduct = null;
 	}
 
 	public ArrayList<Product> searchproducts() {
@@ -459,7 +482,7 @@ public class Panel_product extends JPanel {
 			txtIdProduct.setText(Integer.toString(selectedProduct.getId()));
 			txtNameProduct.setText(selectedProduct.getName());
 			txtBarCode.setText(selectedProduct.getBarCode());
-			txtPrice.setText(String.valueOf(selectedProduct.getPrice()));
+			txtPrice.setText(df.format(selectedProduct.getPrice()));
 			txtInventory.setText(Integer.toString(selectedProduct.getInventory()));
 			jdcManufacturerDate.setDate(selectedProduct.getManufacturerDate());
 			jdcValidationDate.setDate(selectedProduct.getValidationDate());
@@ -488,18 +511,18 @@ public class Panel_product extends JPanel {
 
 	public boolean validateFields() {
 		boolean valid = true;
-		
-		if(txtNameProduct.getText().isBlank()) {
+
+		if (txtNameProduct.getText().isBlank()) {
 			valid = false;
 			txtNameProduct.setBorder(new LineBorder(Color.red));
 		}
-		
-		if(jdcManufacturerDate.getDate() == null) {
+
+		if (jdcManufacturerDate.getDate() == null) {
 			valid = false;
 			jdcManufacturerDate.setBorder(new LineBorder(Color.RED));
 		}
-		
-		if(jdcValidationDate.getDate() == null) {
+
+		if (jdcValidationDate.getDate() == null) {
 			valid = false;
 			jdcValidationDate.setBorder(new LineBorder(Color.RED));
 		}
