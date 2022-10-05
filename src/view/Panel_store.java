@@ -71,10 +71,12 @@ public class Panel_store extends JPanel {
 	private MaskFormatter maskCnpj = null;
 	private Store selectedStore = new Store();
 	private Store storeMounted = new Store();
+	private Panel_product panelProduct;
 
-	public Panel_store(ArrayList<Store> stores) {
+	public Panel_store(ArrayList<Store> stores, Panel_product panelProduct) {
 		setLayout(null);
 		this.stores = stores;
+		this.panelProduct = panelProduct;
 
 		separatorTitle = new JSeparator();
 		separatorTitle.setBounds(10, 49, 857, 3);
@@ -283,8 +285,7 @@ public class Panel_store extends JPanel {
 							"Exclusão de Lojas", JOptionPane.YES_OPTION, JOptionPane.WARNING_MESSAGE);
 					if (opcao == JOptionPane.YES_OPTION) {
 						if (deleteStore(selectedStore.getId())) {
-							tableModel.removeStore(selectedStore, tableStores);
-							formatTable(tableStores);
+							updateListStores(selectedStore, "storeRemoval");
 						}
 					}
 				}
@@ -505,7 +506,11 @@ public class Panel_store extends JPanel {
 			case "storeInclusion":
 				tableModel.addStore(store, tableStores);
 				break;
+			case "storeRemoval":
+				tableModel.removeStore(store, tableStores);
+				break;
 		}
+		panelProduct.updateListStores();
 		formatTable(tableStores);
 	}
 }

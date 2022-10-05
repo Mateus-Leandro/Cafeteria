@@ -165,14 +165,7 @@ public class Panel_product extends JPanel {
 		add(separatorInfoProduct);
 
 		cbxSelectedStore = new JComboBox<Store>();
-
-		if (!stores.isEmpty()) {
-			for (Store s : stores) {
-				cbxSelectedStore.addItem(s);
-			}
-			selectedStore = (Store) cbxSelectedStore.getSelectedItem();
-			idSelectedStore = selectedStore.getId();
-		}
+		updateListStores();
 		cbxSelectedStore.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		cbxSelectedStore.setBounds(682, 63, 185, 22);
 		add(cbxSelectedStore);
@@ -593,5 +586,16 @@ public class Panel_product extends JPanel {
 		}
 		tableModel.fireTableDataChanged();
 		formatTable(tableProducts);
+	}
+
+	public void updateListStores() {
+		cbxSelectedStore.removeAllItems();
+		if (!stores.isEmpty()) {
+			for (Store s : stores) {
+				cbxSelectedStore.addItem(s);
+			}
+			selectedStore = (Store) cbxSelectedStore.getSelectedItem();
+			idSelectedStore = selectedStore.getId();
+		}
 	}
 }

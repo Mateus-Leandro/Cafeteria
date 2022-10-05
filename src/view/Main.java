@@ -60,8 +60,8 @@ public class Main extends JFrame {
 		tabbedPane.setBounds(10, 53, 886, 567);
 
 		stores = storeDB.searchStores(stores);
-		panel_store  = new Panel_store(stores);
 		panel_product = new Panel_product(stores);
+		panel_store = new Panel_store(stores, panel_product);
 		tabbedPane.addTab("Lojas", panel_store);
 		tabbedPane.addTab("Produtos", panel_product);
 		contentPane.add(tabbedPane);
