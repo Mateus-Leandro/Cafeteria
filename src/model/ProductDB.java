@@ -76,15 +76,15 @@ public class ProductDB {
 
 		try {
 			switch (typeSearch) {
-			case "Cod":
-				query = "SELECT * FROM tb_product WHERE id like ?";
-				break;
-			case "Nome":
-				query = "SELECT * FROM tb_product WHERE name like ?";
-				break;
-			case "Cod. Barras":
-				query = "SELECT * FROM tb_product WHERE barCode like ?";
-				break;
+				case "Cod":
+					query = "SELECT * FROM tb_product WHERE id like ?";
+					break;
+				case "Nome":
+					query = "SELECT * FROM tb_product WHERE name like ?";
+					break;
+				case "Cod. Barras":
+					query = "SELECT * FROM tb_product WHERE barCode like ?";
+					break;
 			}
 			ps = conn.prepareStatement(query);
 			ps.setString(1, wantedProduct);
@@ -159,12 +159,32 @@ public class ProductDB {
 	public boolean updateProduct(Product productUpdated, Integer idStore) {
 		conn = db.getConnection();
 		boolean saved = false;
-		if (storeProductDb.deleteProductStore(productUpdated.getId(), idStore, conn)) {
-			saved = recordStock(productUpdated, idStore);
-			db.closeStatement(ps);
+		try {
+			conn.setAutoCommit(false);
+			ps = conn.prepareStatement("UPDATE db_cafeteria.tb_product "
+					+ "SET name = ?, barCode = ?, price = ?, manufacturerDate = ?, validationDate = ?"
+					+ "WHERE id = ?");
+			ps.setString(1, productUpdated.getName());
+			ps.setString(2, productUpdated.getBarCode());
+			ps.setDouble(3, productUpdated.getPrice());
+			ps.setDate(4, new java.sql.Date(productUpdated.getManufacturerDate().getTime()));
+			ps.setDate(5, new java.sql.Date(productUpdated.getValidationDate().getTime()));
+			ps.setInt(6, productUpdated.getId());
+			ps.execute();
+
+			if (storeProductDb.deleteProductStore(productUpdated.getId(), idStore, conn)) {
+				saved = recordStock(productUpdated, idStore);
+			}
+
+			return saved;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}finally {
+			DB.closeStatement(ps);
+			DB.closeConnection(conn);
 		}
-		db.closeConnection(conn);
-		return saved;
+
 	}
 
 	public boolean deleteProduct(int idProduct) {
