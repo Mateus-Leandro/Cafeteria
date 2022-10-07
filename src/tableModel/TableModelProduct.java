@@ -111,6 +111,7 @@ public class TableModelProduct extends AbstractTableModel {
 	}
 
 	public void reloadTable(JTable table, ArrayList<Product> products) {
+		this.products = products;
 		TableModelProduct table_model = new TableModelProduct(products, store);
 		table.setModel(table_model);
 		this.fireTableDataChanged();

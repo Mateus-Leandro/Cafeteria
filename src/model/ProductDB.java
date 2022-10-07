@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import controller.Product;
+import controller.Store;
 
 public class ProductDB {
 	private Connection conn;
@@ -65,6 +66,51 @@ public class ProductDB {
 			DB.closeConnection(conn);
 		}
 		return productsSearched;
+	}
+
+	public ArrayList<Product> searchProduct(Store selectedStore, ArrayList<Product> products, String wantedProduct,
+			String typeSearch) {
+		products = new ArrayList<Product>();
+		conn = db.getConnection();
+		String query = null;
+
+		try {
+			switch (typeSearch) {
+			case "Cod":
+				query = "SELECT * FROM tb_product WHERE id like ?";
+				break;
+			case "Nome":
+				query = "SELECT * FROM tb_product WHERE name like ?";
+				break;
+			case "Cod. Barras":
+				query = "SELECT * FROM tb_product WHERE barCode like ?";
+				break;
+			}
+			ps = conn.prepareStatement(query);
+			ps.setString(1, wantedProduct);
+			rs = ps.executeQuery();
+			while (rs.next()) {
+				product = new Product();
+				product.setId(rs.getInt("id"));
+				product.setName(rs.getString("name"));
+				product.setPrice(rs.getDouble("price"));
+				product.setInventory(searchInventory(selectedStore, product));
+				product.setBarCode(rs.getString("barCode"));
+				product.setManufacturerDate(rs.getDate("manufacturerDate"));
+				product.setValidationDate(rs.getDate("validationDate"));
+				products.add(product);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+
+		} finally {
+			db.closeStatement(ps);
+			db.closeResultSet(rs);
+			db.closeConnection(conn);
+
+		}
+		return products;
 	}
 
 	public Product includeProduct(Product productIncluded, Integer idSelectedStore) {
@@ -165,5 +211,28 @@ public class ProductDB {
 			return false;
 		}
 
+	}
+
+	public Integer searchInventory(Store selectedStore, Product product) {
+
+		Integer inventory = 0;
+		// Busca estoque do produto.
+		if (selectedStore != null) {
+			try {
+				ps2 = conn
+						.prepareStatement("SELECT inventory FROM tb_store_product WHERE idStore = ? AND idProduct = ?");
+				ps2.setInt(1, selectedStore.getId());
+				ps2.setInt(2, product.getId());
+				rs2 = ps2.executeQuery();
+				if (rs2.next()) {
+					inventory = rs2.getInt("inventory");
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				return inventory;
+			}
+		}
+		return inventory;
 	}
 }

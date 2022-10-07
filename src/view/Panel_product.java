@@ -38,6 +38,8 @@ import model.ProductDB;
 import tableModel.TableModelProduct;
 import tools.FormatNumber;
 import tools.TextFieldFormat;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class Panel_product extends JPanel {
 	private JSeparator separatorTitle;
@@ -240,6 +242,7 @@ public class Panel_product extends JPanel {
 					if (opcao == JOptionPane.YES_OPTION) {
 						if (deleteProduct(selectedProduct.getId())) {
 							tableModel.removeProduct(selectedProduct, tableProducts);
+							tableModel.reloadTable(tableProducts, products);
 							formatTable(tableProducts);
 						}
 					}
@@ -325,8 +328,20 @@ public class Panel_product extends JPanel {
 		add(cbxSearchType);
 
 		txtSearch = new JTextField();
+		txtSearch.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent productSearch) {
+				if (txtSearch.getText().isBlank()) {
+					products = searchproducts();
+				} else {
+					products = productDB.searchProduct(selectedStore, products, txtSearch.getText().trim() + "%",
+							cbxSearchType.getSelectedItem().toString());
+				}
+				tableModel.reloadTable(tableProducts, products);
+				formatTable(tableProducts);
+			}
+		});
 		txtSearch.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		txtSearch.setEditable(false);
 		txtSearch.setColumns(10);
 		txtSearch.setBounds(204, 338, 663, 20);
 		add(txtSearch);
@@ -584,6 +599,7 @@ public class Panel_product extends JPanel {
 				tableModel.addProduct(product, tableProducts);
 				break;
 		}
+		tableModel.reloadTable(tableProducts, products);
 		tableModel.fireTableDataChanged();
 		formatTable(tableProducts);
 	}
