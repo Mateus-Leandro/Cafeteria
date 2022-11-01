@@ -20,6 +20,7 @@ public class Main extends JFrame {
 	private JTabbedPane tabbedPane;
 	private Panel_store panel_store;
 	private Panel_product panel_product;
+	private Panel_request panel_request;
 	private JLabel lblRobertosCafeteria;
 	private StoreDB storeDB = new StoreDB();
 	private ArrayList<Store> stores;
@@ -62,8 +63,10 @@ public class Main extends JFrame {
 		stores = storeDB.searchStores(stores);
 		panel_product = new Panel_product(stores);
 		panel_store = new Panel_store(stores, panel_product);
+		panel_request = new Panel_request();
 		tabbedPane.addTab("Lojas", panel_store);
 		tabbedPane.addTab("Produtos", panel_product);
+		tabbedPane.addTab("Pedidos", panel_request);
 		contentPane.add(tabbedPane);
 
 		setLocationRelativeTo(null);
