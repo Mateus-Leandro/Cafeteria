@@ -1,28 +1,17 @@
 package controller;
 
-import java.util.Date;
-
-public class Product {
+public abstract class Product {
 	private Integer id;
 	private String name;
 	private String barCode;
-	private Double price;
-	private Integer inventory;
-	private Date manufacturerDate;
-	private Date validationDate;
 
 	public Product() {
 	}
 
-	public Product(Integer id, String name, String barCode, Double price, Integer inventory, Date manufacturerDate, Date validationDate) {
-		super();
+	public Product(Integer id, String name, String barCode) {
 		this.id = id;
 		this.name = name;
 		this.barCode = barCode;
-		this.price = price;
-		this.inventory = inventory;
-		this.manufacturerDate = manufacturerDate;
-		this.validationDate = validationDate;
 	}
 
 	public Integer getId() {
@@ -47,39 +36,7 @@ public class Product {
 
 	public void setBarCode(String barCode) {
 		this.barCode = barCode;
-	}
-
-	public Date getManufacturerDate() {
-		return manufacturerDate;
-	}
-
-	public Double getPrice() {
-		return price;
-	}
-
-	public void setPrice(Double price) {
-		this.price = price;
-	}
-	
-	public Integer getInventory() {
-		return inventory;
-	}
-	
-	public void setInventory(Integer inventory) {
-		this.inventory = inventory;
-	}
-
-	public void setManufacturerDate(Date manufacturerDate) {
-		this.manufacturerDate = manufacturerDate;
-	}
-
-	public Date getValidationDate() {
-		return validationDate;
-	}
-
-	public void setValidationDate(Date validationDate) {
-		this.validationDate = validationDate;
-	}
+	}	
 
 	@Override
 	public boolean equals(Object obj) {

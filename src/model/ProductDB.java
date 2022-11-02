@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import controller.Product;
+import controller.Product_registration;
 import controller.Store;
 
 public class ProductDB {
@@ -16,11 +16,11 @@ public class ProductDB {
 	private PreparedStatement ps2;
 	private ResultSet rs2;
 	private DB db = new DB();
-	private Product product;
+	private Product_registration product;
 	private StoreProductDB storeProductDb = new StoreProductDB();
 
-	public ArrayList<Product> searchAllProducts(ArrayList<Product> productsSearched, Integer idStore) {
-		productsSearched = new ArrayList<Product>();
+	public ArrayList<Product_registration> searchAllProducts(ArrayList<Product_registration> productsSearched, Integer idStore) {
+		productsSearched = new ArrayList<Product_registration>();
 		conn = db.getConnection();
 		boolean nullStore = idStore == null;
 
@@ -29,7 +29,7 @@ public class ProductDB {
 			rs = ps.executeQuery();
 
 			while (rs.next()) {
-				product = new Product();
+				product = new Product_registration();
 				product.setId(rs.getInt("id"));
 				product.setName(rs.getString("name"));
 				product.setBarCode(rs.getString("barCode"));
@@ -68,9 +68,9 @@ public class ProductDB {
 		return productsSearched;
 	}
 
-	public ArrayList<Product> searchProduct(Store selectedStore, ArrayList<Product> products, String wantedProduct,
+	public ArrayList<Product_registration> searchProduct(Store selectedStore, ArrayList<Product_registration> products, String wantedProduct,
 			String typeSearch) {
-		products = new ArrayList<Product>();
+		products = new ArrayList<Product_registration>();
 		conn = db.getConnection();
 		String query = null;
 
@@ -90,7 +90,7 @@ public class ProductDB {
 			ps.setString(1, wantedProduct);
 			rs = ps.executeQuery();
 			while (rs.next()) {
-				product = new Product();
+				product = new Product_registration();
 				product.setId(rs.getInt("id"));
 				product.setName(rs.getString("name"));
 				product.setPrice(rs.getDouble("price"));
@@ -113,7 +113,7 @@ public class ProductDB {
 		return products;
 	}
 
-	public Product includeProduct(Product productIncluded, Integer idSelectedStore) {
+	public Product_registration includeProduct(Product_registration productIncluded, Integer idSelectedStore) {
 		conn = db.getConnection();
 
 		try {
@@ -156,7 +156,7 @@ public class ProductDB {
 		return productIncluded;
 	}
 
-	public boolean updateProduct(Product productUpdated, Integer idStore) {
+	public boolean updateProduct(Product_registration productUpdated, Integer idStore) {
 		conn = db.getConnection();
 		boolean saved = false;
 		try {
@@ -217,7 +217,7 @@ public class ProductDB {
 
 	}
 
-	public boolean recordStock(Product product, int idStore) {
+	public boolean recordStock(Product_registration product, int idStore) {
 		try {
 			ps = conn.prepareStatement(
 					"INSERT INTO db_cafeteria.tb_store_product (idStore, idProduct, inventory) VALUES (?, ?, ?)");
@@ -233,7 +233,7 @@ public class ProductDB {
 
 	}
 
-	public Integer searchInventory(Store selectedStore, Product product) {
+	public Integer searchInventory(Store selectedStore, Product_registration product) {
 
 		Integer inventory = 0;
 		// Busca estoque do produto.

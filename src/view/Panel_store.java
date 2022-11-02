@@ -10,6 +10,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -72,12 +73,12 @@ public class Panel_store extends JPanel {
 	private Store selectedStore = new Store();
 	private Store storeMounted = new Store();
 	private Panel_product panelProduct;
+	private JComboBox<Store> cbx_store;
 
-	public Panel_store(ArrayList<Store> stores, Panel_product panelProduct) {
-		setLayout(null);
+	public Panel_store(ArrayList<Store> stores, JComboBox<Store> cbxStores) {
 		this.stores = stores;
-		this.panelProduct = panelProduct;
-
+		this.cbx_store = cbxStores;
+		setLayout(null);
 		separatorTitle = new JSeparator();
 		separatorTitle.setBounds(10, 49, 857, 3);
 		add(separatorTitle);
@@ -499,18 +500,23 @@ public class Panel_store extends JPanel {
 				for (Store s : stores) {
 					if (s.equals(store)) { // Método equal utilizando número da loja para comparação.
 						stores.set(stores.indexOf(s), store);
+						cbx_store.removeAllItems();
+						for(Store s2 : stores) {
+							cbx_store.addItem(s2);
+						}
 						break;
 					}
 				}
 				break;
 			case "storeInclusion":
 				tableModel.addStore(store, tableStores);
+				this.cbx_store.addItem(store);
 				break;
 			case "storeRemoval":
 				tableModel.removeStore(store, tableStores);
+				this.cbx_store.removeItem(store);
 				break;
 		}
-		panelProduct.updateListStores();
 		formatTable(tableStores);
 	}
 }

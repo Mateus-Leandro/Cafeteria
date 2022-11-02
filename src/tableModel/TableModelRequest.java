@@ -95,7 +95,7 @@ public class TableModelRequest extends AbstractTableModel {
 		return null;
 	}
 
-	public void reloadTable(JTable table, ArrayList<Store> stores) {
+	public void reloadTable(JTable table, ArrayList<Request> requests) {
 		TableModelRequest table_model = new TableModelRequest(requests);
 		table.setModel(table_model);
 		this.fireTableDataChanged();

@@ -2,12 +2,11 @@ package view;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -31,15 +30,13 @@ import javax.swing.table.TableRowSorter;
 
 import com.toedter.calendar.JDateChooser;
 
-import controller.Product;
+import controller.Product_registration;
 import controller.Store;
 import icons.Icons;
 import model.ProductDB;
 import tableModel.TableModelProduct;
 import tools.FormatNumber;
 import tools.TextFieldFormat;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 
 public class Panel_product extends JPanel {
 	private JSeparator separatorTitle;
@@ -63,11 +60,11 @@ public class Panel_product extends JPanel {
 	private JButton btnSave;
 	private JButton btnCancel;
 	private JTable tableProducts;
-	private ArrayList<Product> products = new ArrayList<Product>();
+	private ArrayList<Product_registration> products = new ArrayList<Product_registration>();
 	private TableModelProduct tableModel;
 	private ProductDB productDB = new ProductDB();
-	private Product selectedProduct;
-	private Product productMounted = new Product();
+	private Product_registration selectedProduct;
+	private Product_registration productMounted = new Product_registration();
 	private JLabel lblBarCode;
 	private JTextField txtBarCode;
 	private JLabel lblManufacturerDate;
@@ -75,23 +72,17 @@ public class Panel_product extends JPanel {
 	private JLabel lblSearchType;
 	private JComboBox<String> cbxSearchType;
 	private JTextField txtSearch;
-	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-	private SimpleDateFormat sdfAmericanFormat = new SimpleDateFormat("YYYY/MM/dd");
 	private FormatNumber fn;
 	private JDateChooser jdcManufacturerDate;
 	private JDateChooser jdcValidationDate;
 	private JLabel lblInventory;
 	private JTextField txtInventory;
-	private Integer idSelectedStore;
-	private ArrayList<Store> stores;
-	private JComboBox<Store> cbxSelectedStore;
-	private Store selectedStore;
-	private JLabel lblSelectedStore;
 	private DecimalFormat df = new DecimalFormat(",##0.00");
 	private TextFieldFormat tf;
+	private Store selectedStore;
 
-	public Panel_product(ArrayList<Store> store) {
-		this.stores = store;
+	public Panel_product(Store Store) {
+		this.selectedStore = Store;
 		setLayout(null);
 		separatorTitle = new JSeparator();
 		separatorTitle.setBounds(10, 49, 857, 3);
@@ -166,13 +157,7 @@ public class Panel_product extends JPanel {
 		separatorInfoProduct.setBounds(262, 136, 605, 3);
 		add(separatorInfoProduct);
 
-		cbxSelectedStore = new JComboBox<Store>();
-		updateListStores();
-		cbxSelectedStore.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		cbxSelectedStore.setBounds(682, 63, 185, 22);
-		add(cbxSelectedStore);
-
-		products = searchproducts();
+		products = searchproducts(selectedStore.getId());
 		tableModel = new TableModelProduct(products, selectedStore.getId());
 		tableProducts = new JTable(tableModel);
 		tableProducts.setBounds(10, 404, 722, 125);
@@ -332,7 +317,7 @@ public class Panel_product extends JPanel {
 			@Override
 			public void keyReleased(KeyEvent productSearch) {
 				if (txtSearch.getText().isBlank()) {
-					products = searchproducts();
+					products = searchproducts(selectedStore.getId());
 				} else {
 					products = productDB.searchProduct(selectedStore, products, txtSearch.getText().trim() + "%",
 							cbxSearchType.getSelectedItem().toString());
@@ -371,26 +356,6 @@ public class Panel_product extends JPanel {
 		txtInventory.setColumns(10);
 		txtInventory.setBounds(118, 228, 101, 20);
 		add(txtInventory);
-
-		lblSelectedStore = new JLabel("Loja Selecionada:");
-		lblSelectedStore.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblSelectedStore.setBounds(552, 69, 120, 17);
-		add(lblSelectedStore);
-
-		cbxSelectedStore.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent changedSelectedStore) {
-				if (changedSelectedStore.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-					selectedStore = (Store) cbxSelectedStore.getSelectedItem();
-					idSelectedStore = selectedStore.getId();
-					searchproducts();
-					tableModel.reloadTable(tableProducts, products);
-					formatTable(tableProducts);
-					if (selectedProduct != null) {
-						selectProductTable(selectedProduct.getId());
-					}
-				}
-			}
-		});
 	}
 
 	public void editProduct() {
@@ -454,8 +419,8 @@ public class Panel_product extends JPanel {
 		selectedProduct = null;
 	}
 
-	public ArrayList<Product> searchproducts() {
-		products = productDB.searchAllProducts(products, selectedStore.getId());
+	public ArrayList<Product_registration> searchproducts(int selectedStoreId) {
+		products = productDB.searchAllProducts(products, selectedStoreId);
 		return products;
 	}
 
@@ -478,7 +443,7 @@ public class Panel_product extends JPanel {
 
 	public void selectProductTable(int id) {
 		selectedProduct = null;
-		for (Product productFound : products) {
+		for (Product_registration productFound : products) {
 			if (productFound.getId() == id) {
 				selectedProduct = productFound;
 				break;
@@ -503,11 +468,11 @@ public class Panel_product extends JPanel {
 
 		if (txtIdProduct.getText().isBlank()) {
 			operation = "productInclusion";
-			productMounted = productDB.includeProduct(productMount(), idSelectedStore);
+			productMounted = productDB.includeProduct(productMount(), selectedStore.getId());
 			saved = productMounted != null;
 		} else {
 			operation = "productUpdate";
-			saved = productDB.updateProduct(productMount(), idSelectedStore);
+			saved = productDB.updateProduct(productMount(), selectedStore.getId());
 		}
 
 		if (saved) {
@@ -541,8 +506,8 @@ public class Panel_product extends JPanel {
 		return productDB.deleteProduct(productIdDeleted);
 	}
 
-	public Product productMount() {
-		productMounted = new Product();
+	public Product_registration productMount() {
+		productMounted = new Product_registration();
 		Integer id = null;
 		String name = null;
 		String barCode = null;
@@ -584,11 +549,13 @@ public class Panel_product extends JPanel {
 
 		return productMounted;
 	}
+	
+	
 
-	public void updateListProducts(Product product, String operation) {
+	public void updateListProducts(Product_registration product, String operation) {
 		switch (operation) {
 			case "productUpdate":
-				for (Product p : products) {
+				for (Product_registration p : products) {
 					if (p.equals(product)) { // Método equal utilizando código do produto para comparação.
 						products.set(products.indexOf(p), product);
 						break;
@@ -603,15 +570,13 @@ public class Panel_product extends JPanel {
 		tableModel.fireTableDataChanged();
 		formatTable(tableProducts);
 	}
-
-	public void updateListStores() {
-		cbxSelectedStore.removeAllItems();
-		if (!stores.isEmpty()) {
-			for (Store s : stores) {
-				cbxSelectedStore.addItem(s);
-			}
-			selectedStore = (Store) cbxSelectedStore.getSelectedItem();
-			idSelectedStore = selectedStore.getId();
-		}
+	
+	public void changeStore(Store selectedStore) {
+		this.selectedStore = selectedStore;
+        products = searchproducts(selectedStore.getId());
+		tableModel.reloadTable(tableProducts, products);
+		formatTable(tableProducts);
+		cancelProduct();
+		txtSearch.setText(null);
 	}
 }

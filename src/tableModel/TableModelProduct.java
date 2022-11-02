@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
-import controller.Product;
+import controller.Product_registration;
 
 public class TableModelProduct extends AbstractTableModel {
 
@@ -15,7 +15,7 @@ public class TableModelProduct extends AbstractTableModel {
 	 */
 	private static final long serialVersionUID = 1L;
 	private String columns[] = { "Cod", "Nome", "Cod. Barra", "Preço", "Estoque", "Data Fabricação", "Data de validade" };
-	private ArrayList<Product> products;
+	private ArrayList<Product_registration> products;
 	private final int COLUMN_COD = 0;
 	private final int COLUMN_NAME = 1;
 	private final int COLUMN_BAR_CODE = 2;
@@ -26,7 +26,7 @@ public class TableModelProduct extends AbstractTableModel {
 	private Integer store;
 	private Integer inventory;
 
-	public TableModelProduct(ArrayList<Product> products, Integer store) {
+	public TableModelProduct(ArrayList<Product_registration> products, Integer store) {
 		this.products = products;
 		this.store = store;
 	}
@@ -79,7 +79,7 @@ public class TableModelProduct extends AbstractTableModel {
 
 	@Override
 	public Object getValueAt(int rowIndex, int columIndex) {
-		Product product = this.products.get(rowIndex);
+		Product_registration product = this.products.get(rowIndex);
 		switch (columIndex) {
 			case COLUMN_COD:
 				return product.getId();
@@ -100,17 +100,17 @@ public class TableModelProduct extends AbstractTableModel {
 		return null;
 	}
 
-	public void addProduct(Product newProduct, JTable tableProducts) {
+	public void addProduct(Product_registration newProduct, JTable tableProducts) {
 		this.products.add(newProduct);
 		reloadTable(tableProducts, products);
 	}
 
-	public void removeProduct(Product removedProduct, JTable tableProducts) {
+	public void removeProduct(Product_registration removedProduct, JTable tableProducts) {
 		this.products.remove(removedProduct);
 		reloadTable(tableProducts, products);
 	}
 
-	public void reloadTable(JTable table, ArrayList<Product> products) {
+	public void reloadTable(JTable table, ArrayList<Product_registration> products) {
 		this.products = products;
 		TableModelProduct table_model = new TableModelProduct(products, store);
 		table.setModel(table_model);

@@ -1,5 +1,6 @@
 package controller;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 public class Request {
@@ -9,6 +10,7 @@ public class Request {
 	private Double amount;
 	private Boolean finished;
 	private Date creationDate;
+	private ArrayList<Product_request> products;
 
 	public Request() {
 
@@ -21,6 +23,7 @@ public class Request {
 		this.amount = amount;
 		this.finished = finished;
 		this.creationDate = creationDate;
+		this.products = new ArrayList<Product_request>();
 	}
 
 	public Integer getId() {
@@ -71,4 +74,11 @@ public class Request {
 		this.creationDate = creationDate;
 	}
 
+	public ArrayList<Product_request> getProducts() {
+		return products;
+	}
+
+	public void setProducts(ArrayList<Product_request> products) {
+		this.products = products;
+	}
 }

@@ -1,23 +1,28 @@
 package view;
 
-import javax.swing.JPanel;
-import javax.swing.JLabel;
 import java.awt.Font;
 import java.util.ArrayList;
 
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-import javax.swing.JSeparator;
-import javax.swing.JComboBox;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JTextField;
-import javax.swing.JTable;
-import javax.swing.JScrollPane;
 
+import controller.Product_request;
 import controller.Request;
 import controller.Store;
 import model.RequestDB;
+import tableModel.TableModelProductRequest;
 import tableModel.TableModelRequest;
 
 public class Panel_request extends JPanel {
@@ -30,21 +35,24 @@ public class Panel_request extends JPanel {
 	private JScrollPane scrollPaneRequest;
 	private JLabel lblRequests;
 	private JSeparator SeparatorRequests;
-	private JScrollPane scrollPaneProducts;
 	private JLabel lblProducts;
 	private JSeparator SeparatorProducts;
 	private JLabel lblSelectedStore;
-	private JComboBox<Store> cbxSelectedStore;
 	private ArrayList<Request> requests = new ArrayList<Request>();
-	private TableModelRequest tableModel;
+	private TableModelRequest tableModelRequest;
 	private RequestDB request_db = new RequestDB();
+	private JTable tableProductsRequest;
+	private JScrollPane scrollPaneProducstRequest;
+	private ArrayList<Product_request> products = new ArrayList<Product_request>();
+	private TableModelProductRequest tableModelProductRequest;
+	private Store selectedStore;
 
 	/**
 	 * Create the panel.
 	 */
-	public Panel_request() {
+	public Panel_request(Store store) {
+		this.selectedStore = store;
 		setLayout(null);
-
 		lblPedidos = new JLabel("Pedidos de Venda");
 		lblPedidos.setHorizontalAlignment(SwingConstants.CENTER);
 		lblPedidos.setFont(new Font("Tahoma", Font.BOLD, 24));
@@ -73,15 +81,29 @@ public class Panel_request extends JPanel {
 		textField.setBounds(204, 75, 325, 20);
 		add(textField);
 
-		scrollPaneRequest = new JScrollPane();
+		search_requests();
+		tableModelRequest = new TableModelRequest(requests);
+		tableRequest = new JTable(tableModelRequest);
+		formatTableRequest(tableRequest);
+
+		tableRequest.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent selecaoLinhaTabela) {
+				ListSelectionModel lsm = (ListSelectionModel) selecaoLinhaTabela.getSource();
+				if (!lsm.isSelectionEmpty()) {
+					int selectedRow = tableRequest.getSelectedRow();
+					int selectedRequestId = (int) tableRequest.getValueAt(selectedRow, 0);
+					selectRequest(selectedRequestId);
+					formatTableProductsRequest(tableProductsRequest);
+				} else {
+					tableRequest.clearSelection();
+				}
+			}
+		});
+
+		scrollPaneRequest = new JScrollPane(tableRequest);
 		scrollPaneRequest.setBounds(10, 137, 857, 155);
 		add(scrollPaneRequest);
-
-		search_requests();
-		tableModel = new TableModelRequest(requests);
-		tableRequest = new JTable(tableModel);
-		formatTable(tableRequest);
-		scrollPaneRequest.setViewportView(tableRequest);
 
 		lblRequests = new JLabel("Pedidos");
 		lblRequests.setFont(new Font("Tahoma", Font.BOLD, 20));
@@ -91,10 +113,6 @@ public class Panel_request extends JPanel {
 		SeparatorRequests = new JSeparator();
 		SeparatorRequests.setBounds(94, 117, 773, 3);
 		add(SeparatorRequests);
-
-		scrollPaneProducts = new JScrollPane();
-		scrollPaneProducts.setBounds(10, 352, 857, 155);
-		add(scrollPaneProducts);
 
 		lblProducts = new JLabel("Produtos do Pedido");
 		lblProducts.setFont(new Font("Tahoma", Font.BOLD, 20));
@@ -110,10 +128,13 @@ public class Panel_request extends JPanel {
 		lblSelectedStore.setBounds(561, 79, 120, 17);
 		add(lblSelectedStore);
 
-		cbxSelectedStore = new JComboBox<Store>();
-		cbxSelectedStore.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		cbxSelectedStore.setBounds(686, 72, 181, 22);
-		add(cbxSelectedStore);
+		tableModelProductRequest = new TableModelProductRequest(products);
+		tableProductsRequest = new JTable(tableModelProductRequest);
+		tableProductsRequest.setRowSelectionAllowed(false);
+		scrollPaneProducstRequest = new JScrollPane(tableProductsRequest);
+		scrollPaneProducstRequest.setBounds(10, 352, 857, 163);
+		formatTableProductsRequest(tableProductsRequest);
+		add(scrollPaneProducstRequest);
 
 	}
 
@@ -121,19 +142,45 @@ public class Panel_request extends JPanel {
 		this.requests = request_db.searchRequest(requests);
 	}
 
-	public void formatTable(JTable table) {
+	public void selectRequest(int idRequest) {
+		for (Request r : requests) {
+			if (r.getId() == idRequest) {
+				products = r.getProducts();
+				tableModelProductRequest.reloadTable(tableProductsRequest, products);
+				break;
+			}
+		}
+	}
+
+	public void formatTableRequest(JTable table) {
 		tableRequest.setAutoResizeMode(tableRequest.AUTO_RESIZE_OFF);
 		tableRequest.getTableHeader().setReorderingAllowed(false);
 		tableRequest.getTableHeader().setResizingAllowed(false);
 
-		table.getColumnModel().getColumn(0).setPreferredWidth(70); // Request id
-		table.getColumnModel().getColumn(1).setPreferredWidth(230); // Client Name
-		table.getColumnModel().getColumn(2).setPreferredWidth(149); // Request Amount
-		table.getColumnModel().getColumn(3).setPreferredWidth(200); // Payment Type
-		table.getColumnModel().getColumn(4).setPreferredWidth(75); // Request Finished
-		table.getColumnModel().getColumn(5).setPreferredWidth(130); // Manufacturer Date
+		tableRequest.getColumnModel().getColumn(0).setPreferredWidth(70); // Request id
+		tableRequest.getColumnModel().getColumn(1).setPreferredWidth(230); // Client Name
+		tableRequest.getColumnModel().getColumn(2).setPreferredWidth(149); // Request Amount
+		tableRequest.getColumnModel().getColumn(3).setPreferredWidth(200); // Payment Type
+		tableRequest.getColumnModel().getColumn(4).setPreferredWidth(75); // Request Finished
+		tableRequest.getColumnModel().getColumn(5).setPreferredWidth(130); // Manufacturer Date
 
-		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableModel);
-		table.setRowSorter(sorter);
+		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableModelRequest);
+		tableRequest.setRowSorter(sorter);
+	}
+
+	public void formatTableProductsRequest(JTable table) {
+		tableProductsRequest.setAutoResizeMode(tableRequest.AUTO_RESIZE_OFF);
+		tableProductsRequest.getTableHeader().setReorderingAllowed(false);
+		tableProductsRequest.getTableHeader().setResizingAllowed(false);
+
+		tableProductsRequest.getColumnModel().getColumn(0).setPreferredWidth(70); // Product id
+		tableProductsRequest.getColumnModel().getColumn(1).setPreferredWidth(230); // Product Name
+		tableProductsRequest.getColumnModel().getColumn(2).setPreferredWidth(149); // BarCode
+		tableProductsRequest.getColumnModel().getColumn(3).setPreferredWidth(149); // the Amount
+		tableProductsRequest.getColumnModel().getColumn(4).setPreferredWidth(149); // Unit Price
+		tableProductsRequest.getColumnModel().getColumn(5).setPreferredWidth(149); // Total Price
+
+		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableModelProductRequest);
+		tableProductsRequest.setRowSorter(sorter);
 	}
 }
