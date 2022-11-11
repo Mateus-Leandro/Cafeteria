@@ -1,7 +1,17 @@
 package view;
 
+import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
@@ -18,6 +28,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import com.toedter.calendar.JDateChooser;
+
 import controller.Product_request;
 import controller.Request;
 import controller.Store;
@@ -30,14 +42,13 @@ public class Panel_request extends JPanel {
 	private JSeparator separatorTitle;
 	private JLabel lblTypeSearch;
 	private JComboBox comboBox;
-	private JTextField textField;
+	private JTextField txtIdRequest;
 	private JTable tableRequest;
 	private JScrollPane scrollPaneRequest;
 	private JLabel lblRequests;
 	private JSeparator SeparatorRequests;
 	private JLabel lblProducts;
 	private JSeparator SeparatorProducts;
-	private JLabel lblSelectedStore;
 	private ArrayList<Request> requests = new ArrayList<Request>();
 	private TableModelRequest tableModelRequest;
 	private RequestDB request_db = new RequestDB();
@@ -46,6 +57,13 @@ public class Panel_request extends JPanel {
 	private ArrayList<Product_request> products = new ArrayList<Product_request>();
 	private TableModelProductRequest tableModelProductRequest;
 	private Store selectedStore;
+	private JLabel lblQuantityRequests;
+	private JLabel QuantityRequests = new JLabel();
+	private JLabel lblStartingDate;
+	private JLabel lblFinalDate;
+	private JDateChooser jdcStartingDate;
+	private JDateChooser jdcFinalDate;
+	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
 	/**
 	 * Create the panel.
@@ -68,20 +86,71 @@ public class Panel_request extends JPanel {
 		lblTypeSearch.setBounds(10, 79, 86, 17);
 		add(lblTypeSearch);
 
+		jdcStartingDate = new JDateChooser("dd/MM/yyyy", "##/##/#####", '_');
+		jdcStartingDate.setVisible(false);
+		jdcStartingDate.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		jdcStartingDate.setBounds(421, 76, 110, 20);
+		add(jdcStartingDate);
+
+		jdcFinalDate = new JDateChooser("dd/MM/yyyy", "##/##/#####", '_');
+		jdcFinalDate.setVisible(false);
+		jdcFinalDate.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		jdcFinalDate.setBounds(595, 76, 110, 20);
+		add(jdcFinalDate);
+
 		comboBox = new JComboBox();
+		comboBox.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent changeTypeSearch) {
+				if (changeTypeSearch.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+					if (comboBox.getSelectedItem().equals("Data")) {
+
+						jdcStartingDate.setDate(new Date());
+						jdcFinalDate.setDate(new Date());
+
+						lblStartingDate.setVisible(true);
+						jdcStartingDate.setVisible(true);
+						lblFinalDate.setVisible(true);
+						jdcFinalDate.setVisible(true);
+						txtIdRequest.setVisible(false);
+						searchForDate();
+					} else {
+						lblStartingDate.setVisible(false);
+						jdcStartingDate.setVisible(false);
+						lblFinalDate.setVisible(false);
+						jdcFinalDate.setVisible(false);
+						txtIdRequest.setVisible(true);
+						search_requests("All", null, null, null);
+					}
+					formatTableRequest(tableProductsRequest);
+				}
+			}
+		});
 		comboBox.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		comboBox.setModel(new DefaultComboBoxModel(new String[] { "N. Pedido", "Cliente", "Data" }));
+		comboBox.setModel(new DefaultComboBoxModel(new String[] { "N. Pedido", "Data" }));
 		comboBox.setBounds(94, 72, 105, 23);
 		add(comboBox);
 
-		textField = new JTextField();
-		textField.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		textField.setEditable(false);
-		textField.setColumns(10);
-		textField.setBounds(204, 75, 325, 20);
-		add(textField);
+		txtIdRequest = new JTextField();
+		txtIdRequest.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent searchRequestId) {
+				if (txtIdRequest.getText().isBlank()) {
+					search_requests("All", null, null, null);
+				} else {
+					search_requests("NumberRequest", null, null, Integer.parseInt(txtIdRequest.getText().trim()));
+				}
+				tableModelRequest.reloadTable(tableProductsRequest, requests);
+				products.clear();
+				tableModelProductRequest.reloadTable(tableProductsRequest, products);
+				formatTableProductsRequest(tableProductsRequest);
+			}
+		});
+		txtIdRequest.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		txtIdRequest.setColumns(10);
+		txtIdRequest.setBounds(204, 75, 147, 20);
+		add(txtIdRequest);
 
-		search_requests();
+		search_requests("All", null, null, null);
 		tableModelRequest = new TableModelRequest(requests);
 		tableRequest = new JTable(tableModelRequest);
 		formatTableRequest(tableRequest);
@@ -123,11 +192,6 @@ public class Panel_request extends JPanel {
 		SeparatorProducts.setBounds(214, 332, 653, 9);
 		add(SeparatorProducts);
 
-		lblSelectedStore = new JLabel("Loja Selecionada:");
-		lblSelectedStore.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblSelectedStore.setBounds(561, 79, 120, 17);
-		add(lblSelectedStore);
-
 		tableModelProductRequest = new TableModelProductRequest(products);
 		tableProductsRequest = new JTable(tableModelProductRequest);
 		tableProductsRequest.setRowSelectionAllowed(false);
@@ -136,10 +200,67 @@ public class Panel_request extends JPanel {
 		formatTableProductsRequest(tableProductsRequest);
 		add(scrollPaneProducstRequest);
 
+		lblQuantityRequests = new JLabel("Qtd. Pedidos:");
+		lblQuantityRequests.setFont(new Font("Tahoma", Font.BOLD, 14));
+		lblQuantityRequests.setBounds(730, 79, 100, 17);
+		add(lblQuantityRequests);
+
+		QuantityRequests.setForeground(Color.BLUE);
+		QuantityRequests.setFont(new Font("Tahoma", Font.BOLD, 14));
+		QuantityRequests.setBounds(840, 79, 27, 17);
+		add(QuantityRequests);
+
+		lblStartingDate = new JLabel("De:");
+		lblStartingDate.setVisible(false);
+		lblStartingDate.setFont(new Font("Tahoma", Font.BOLD, 14));
+		lblStartingDate.setBounds(391, 79, 33, 17);
+		add(lblStartingDate);
+
+		lblFinalDate = new JLabel("Até");
+		lblFinalDate.setVisible(false);
+		lblFinalDate.setFont(new Font("Tahoma", Font.BOLD, 14));
+		lblFinalDate.setBounds(548, 79, 33, 17);
+		add(lblFinalDate);
+
+		jdcStartingDate.getDateEditor().addPropertyChangeListener(new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent changedStartingDate) {
+				String name = changedStartingDate.getPropertyName();
+				jdcFinalDate.setMinSelectableDate(jdcStartingDate.getDate());
+				if (name.equalsIgnoreCase("date")) {
+					try {
+						if (jdcFinalDate.getDate() != null && jdcStartingDate.getDate() != null) {
+							if (sdf.parse(((JTextField) jdcFinalDate.getDateEditor()).getText())
+									.before(sdf.parse(((JTextField) jdcStartingDate.getDateEditor()).getText()))) {
+								jdcFinalDate.setDate(jdcStartingDate.getDate());
+							}
+							searchForDate();
+						}
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+					formatTableRequest(tableProductsRequest);
+				}
+			}
+		});
+		jdcFinalDate.getDateEditor().addPropertyChangeListener(new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent changedFinalDate) {
+				String name = changedFinalDate.getPropertyName();
+
+				if (name.equalsIgnoreCase("date")) {
+					searchForDate();
+					formatTableRequest(tableProductsRequest);
+				}
+			}
+		});
+
 	}
 
-	public void search_requests() {
-		this.requests = request_db.searchRequest(requests);
+	public void search_requests(String typeSearch, Date startingDate, Date finalDate, Integer requestSelected) {
+		this.requests = request_db.searchRequest(typeSearch, startingDate, finalDate, requestSelected, requests,
+				selectedStore.getId());
+		QuantityRequests.setText(Integer.toString(requests.size()));
 	}
 
 	public void selectRequest(int idRequest) {
@@ -152,17 +273,33 @@ public class Panel_request extends JPanel {
 		}
 	}
 
+	public void changeStore(Store selectedStore) {
+		this.selectedStore = selectedStore;
+		search_requests("All", null, null, null);
+		tableModelRequest.reloadTable(tableProductsRequest, requests);
+		products.clear();
+		tableModelProductRequest.reloadTable(tableProductsRequest, products);
+		formatTableRequest(tableProductsRequest);
+		formatTableProductsRequest(tableProductsRequest);
+		
+		comboBox.getModel().setSelectedItem("N. Pedido");
+		txtIdRequest.setVisible(true);
+		jdcStartingDate.setVisible(false);
+		jdcFinalDate.setVisible(false);
+	}
+
 	public void formatTableRequest(JTable table) {
 		tableRequest.setAutoResizeMode(tableRequest.AUTO_RESIZE_OFF);
 		tableRequest.getTableHeader().setReorderingAllowed(false);
 		tableRequest.getTableHeader().setResizingAllowed(false);
 
-		tableRequest.getColumnModel().getColumn(0).setPreferredWidth(70); // Request id
-		tableRequest.getColumnModel().getColumn(1).setPreferredWidth(230); // Client Name
-		tableRequest.getColumnModel().getColumn(2).setPreferredWidth(149); // Request Amount
-		tableRequest.getColumnModel().getColumn(3).setPreferredWidth(200); // Payment Type
-		tableRequest.getColumnModel().getColumn(4).setPreferredWidth(75); // Request Finished
-		tableRequest.getColumnModel().getColumn(5).setPreferredWidth(130); // Manufacturer Date
+		tableRequest.getColumnModel().getColumn(0).setPreferredWidth(60); // Request id
+		tableRequest.getColumnModel().getColumn(1).setPreferredWidth(60); // Store id
+		tableRequest.getColumnModel().getColumn(2).setPreferredWidth(230); // Client Name
+		tableRequest.getColumnModel().getColumn(3).setPreferredWidth(149); // Request Amount
+		tableRequest.getColumnModel().getColumn(4).setPreferredWidth(150); // Payment Type
+		tableRequest.getColumnModel().getColumn(5).setPreferredWidth(75); // Request Finished
+		tableRequest.getColumnModel().getColumn(6).setPreferredWidth(130); // Manufacturer Date
 
 		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableModelRequest);
 		tableRequest.setRowSorter(sorter);
@@ -174,13 +311,23 @@ public class Panel_request extends JPanel {
 		tableProductsRequest.getTableHeader().setResizingAllowed(false);
 
 		tableProductsRequest.getColumnModel().getColumn(0).setPreferredWidth(70); // Product id
-		tableProductsRequest.getColumnModel().getColumn(1).setPreferredWidth(230); // Product Name
-		tableProductsRequest.getColumnModel().getColumn(2).setPreferredWidth(149); // BarCode
+		tableProductsRequest.getColumnModel().getColumn(1).setPreferredWidth(200); // Product Name
+		tableProductsRequest.getColumnModel().getColumn(2).setPreferredWidth(137); // BarCode
 		tableProductsRequest.getColumnModel().getColumn(3).setPreferredWidth(149); // the Amount
 		tableProductsRequest.getColumnModel().getColumn(4).setPreferredWidth(149); // Unit Price
 		tableProductsRequest.getColumnModel().getColumn(5).setPreferredWidth(149); // Total Price
 
 		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableModelProductRequest);
 		tableProductsRequest.setRowSorter(sorter);
+	}
+
+	public void searchForDate() {
+		txtIdRequest.setText(null);
+		search_requests("Date", jdcStartingDate.getDate(), jdcFinalDate.getDate(), null);
+		products.clear();
+		tableModelProductRequest.reloadTable(tableProductsRequest, products);
+		tableModelRequest.reloadTable(tableProductsRequest, requests);
+		formatTableProductsRequest(tableProductsRequest);
+		formatTableRequest(tableProductsRequest);
 	}
 }

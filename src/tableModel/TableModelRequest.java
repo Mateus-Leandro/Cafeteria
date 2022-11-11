@@ -17,14 +17,15 @@ public class TableModelRequest extends AbstractTableModel {
 	 */
 	SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 	private static final long serialVersionUID = 1L;
-	private String columns[] = { "Nº", "Cliente", "Valor Total", "Pagamento", "Finalizado", "Data Criação" };
+	private String columns[] = { "Nº", "Loja", "Cliente", "Valor Total", "Pagamento", "Finalizado", "Data Criação" };
 	private ArrayList<Request> requests;
 	private final int COLUMN_NUMBER_REQUEST = 0;
-	private final int COLUMN_CLIENTE_NAME = 1;
-	private final int COLUMN_PAYMENT_AMOUNT = 2;
-	private final int COLUMN_PAYMENT_TYPE = 3;
-	private final int COLUMN_FINISHED_REQUEST = 4;
-	private final int COLUMN_CREATION_DATE = 5;
+	private final int COLUMN_NUMBER_STORE = 1;
+	private final int COLUMN_CLIENTE_NAME = 2;
+	private final int COLUMN_PAYMENT_AMOUNT = 3;
+	private final int COLUMN_PAYMENT_TYPE = 4;
+	private final int COLUMN_FINISHED_REQUEST = 5;
+	private final int COLUMN_CREATION_DATE = 6;
 
 	public TableModelRequest(ArrayList<Request> requests) {
 		this.requests = requests;
@@ -59,6 +60,8 @@ public class TableModelRequest extends AbstractTableModel {
 
 			case COLUMN_NUMBER_REQUEST:
 				return Integer.class;
+			case COLUMN_NUMBER_STORE:
+				return Integer.class;
 			case COLUMN_CLIENTE_NAME:
 				return String.class;
 			case COLUMN_PAYMENT_AMOUNT:
@@ -80,6 +83,8 @@ public class TableModelRequest extends AbstractTableModel {
 		switch (columIndex) {
 			case COLUMN_NUMBER_REQUEST:
 				return request.getId();
+			case COLUMN_NUMBER_STORE:
+				return request.getStore();
 			case COLUMN_CLIENTE_NAME:
 				return request.getUser().getName();
 			case COLUMN_PAYMENT_AMOUNT:
@@ -96,6 +101,7 @@ public class TableModelRequest extends AbstractTableModel {
 	}
 
 	public void reloadTable(JTable table, ArrayList<Request> requests) {
+		this.requests = requests;
 		TableModelRequest table_model = new TableModelRequest(requests);
 		table.setModel(table_model);
 		this.fireTableDataChanged();

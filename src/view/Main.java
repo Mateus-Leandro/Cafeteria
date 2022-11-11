@@ -98,6 +98,7 @@ public class Main extends JFrame {
 				if (changeStore.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
 					selectedStore = (Store) cbxSelectedStore.getSelectedItem();
 					panel_product.changeStore(selectedStore);
+					panel_request.changeStore(selectedStore);
 				}
 			}
 		});

@@ -6,7 +6,11 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -78,6 +82,7 @@ public class Panel_product extends JPanel {
 	private JLabel lblInventory;
 	private JTextField txtInventory;
 	private DecimalFormat df = new DecimalFormat(",##0.00");
+	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 	private TextFieldFormat tf;
 	private Store selectedStore;
 
@@ -293,9 +298,9 @@ public class Panel_product extends JPanel {
 		lblManufacturerDate.setBounds(616, 196, 136, 17);
 		add(lblManufacturerDate);
 
-		lblValidationDate = new JLabel("Data de fabricação:");
+		lblValidationDate = new JLabel("Data de Validade:");
 		lblValidationDate.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblValidationDate.setBounds(616, 227, 136, 17);
+		lblValidationDate.setBounds(626, 227, 126, 17);
 		add(lblValidationDate);
 
 		lblSearchType = new JLabel("Pesquisar por");
@@ -331,17 +336,34 @@ public class Panel_product extends JPanel {
 		txtSearch.setBounds(204, 338, 663, 20);
 		add(txtSearch);
 
-		jdcManufacturerDate = new JDateChooser("dd/MM/yyyy", "##/##/#####", '_');
-		jdcManufacturerDate.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		jdcManufacturerDate.setBounds(757, 196, 110, 20);
-		jdcManufacturerDate.setEnabled(false);
-		add(jdcManufacturerDate);
-
 		jdcValidationDate = new JDateChooser("dd/MM/yyyy", "##/##/#####", '_');
 		jdcValidationDate.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		jdcValidationDate.setBounds(757, 224, 110, 20);
 		jdcValidationDate.setEnabled(false);
 		add(jdcValidationDate);
+
+		jdcManufacturerDate = new JDateChooser("dd/MM/yyyy", "##/##/#####", '_');
+		jdcManufacturerDate.getDateEditor().addPropertyChangeListener(new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent clickAlteraDataPagamento) {
+//				jdcManufacturerDate.setDate(null);
+				jdcValidationDate.setMinSelectableDate(jdcManufacturerDate.getDate());
+				try {
+					if (jdcValidationDate.getDate() != null && jdcManufacturerDate.getDate() != null) {
+						if (sdf.parse(((JTextField) jdcValidationDate.getDateEditor()).getText())
+								.before(sdf.parse(((JTextField) jdcManufacturerDate.getDateEditor()).getText()))) {
+							jdcValidationDate.setDate(null);
+						}
+					}
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		jdcManufacturerDate.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		jdcManufacturerDate.setBounds(757, 196, 110, 20);
+		jdcManufacturerDate.setEnabled(false);
+		add(jdcManufacturerDate);
 
 		lblInventory = new JLabel("Estoque Atual:");
 		lblInventory.setFont(new Font("Tahoma", Font.BOLD, 14));
@@ -549,8 +571,6 @@ public class Panel_product extends JPanel {
 
 		return productMounted;
 	}
-	
-	
 
 	public void updateListProducts(Product_registration product, String operation) {
 		switch (operation) {
@@ -570,10 +590,10 @@ public class Panel_product extends JPanel {
 		tableModel.fireTableDataChanged();
 		formatTable(tableProducts);
 	}
-	
+
 	public void changeStore(Store selectedStore) {
 		this.selectedStore = selectedStore;
-        products = searchproducts(selectedStore.getId());
+		products = searchproducts(selectedStore.getId());
 		tableModel.reloadTable(tableProducts, products);
 		formatTable(tableProducts);
 		cancelProduct();

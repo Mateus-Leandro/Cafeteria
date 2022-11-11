@@ -16,7 +16,7 @@ public class TableModelStore extends AbstractTableModel {
 	 */
 	SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 	private static final long serialVersionUID = 1L;
-	private String columns[] = { "Nº Loja", "Razão", "CNPJ", "Rua", "Número", "Cidade", "Bairro", "Data Criação" };
+	private String columns[] = { "Nº Loja", "Nome", "CNPJ", "Rua", "Número", "Cidade", "Bairro", "Data Criação" };
 	private ArrayList<Store> stores;
 	private final int COLUMN_NUMBER_STORE = 0;
 	private final int COLUMN_NAME = 1;

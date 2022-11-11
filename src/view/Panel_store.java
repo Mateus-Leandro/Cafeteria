@@ -126,9 +126,9 @@ public class Panel_store extends JPanel {
 		fTxtCnpj.setBounds(724, 187, 143, 20);
 		add(fTxtCnpj);
 
-		lblNameStore = new JLabel("Razão Social:");
+		lblNameStore = new JLabel("Nome:");
 		lblNameStore.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblNameStore.setBounds(10, 187, 95, 17);
+		lblNameStore.setBounds(10, 187, 52, 17);
 		add(lblNameStore);
 
 		lblStreet = new JLabel("Rua:");
@@ -141,7 +141,7 @@ public class Panel_store extends JPanel {
 		txtNameStore.setDocument(new TextFieldFormat(55, "text"));
 		txtNameStore.setEditable(false);
 		txtNameStore.setColumns(10);
-		txtNameStore.setBounds(102, 187, 399, 20);
+		txtNameStore.setBounds(61, 187, 409, 20);
 		add(txtNameStore);
 
 		txtStreet = new JTextField();

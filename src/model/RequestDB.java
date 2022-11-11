@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 
 import controller.Payment;
 import controller.Product_request;
@@ -26,22 +27,57 @@ public class RequestDB {
 	private Payment payment;
 	private Product_request productRequest;
 
-	public ArrayList<Request> searchRequest(ArrayList<Request> requestsSearched) {
+	public ArrayList<Request> searchRequest(String typeSearch, Date startingDate, Date finalDate,
+			Integer requestSelected, ArrayList<Request> requestsSearched, Integer storeSelected) {
 		requestsSearched = new ArrayList<Request>();
 		conn = db.getConnection();
 		conn2 = db.getConnection();
 
 		try {
-			ps = conn.prepareStatement(
-					"select tb_request.id AS id_request, tb_user.id AS id_user, tb_profile.id AS id_profile,"
-							+ " tb_profile.description AS description_profile, tb_user.name as client_name,"
-							+ " tb_user.zipCode, tb_user.telephone, tb_user.cpf, tb_payment.id AS payment_id,"
-							+ " tb_payment.description as payment_description, tb_payment.card, amount, finished,creationDate"
-							+ " from tb_request left join tb_user on tb_request.idUser = tb_user.id"
-							+ " left join tb_profile on tb_user.profileId = tb_profile.id"
-							+ " left join tb_payment on tb_request.idPayment = tb_payment.id;");
-			rs = ps.executeQuery();
 
+			switch (typeSearch) {
+				case "All":
+					ps = conn.prepareStatement(
+							"select tb_request.id AS id_request, tb_request.store, tb_user.id AS id_user, tb_profile.id AS id_profile,"
+									+ " tb_profile.description AS description_profile, tb_user.name as client_name,"
+									+ " tb_user.zipCode, tb_user.telephone, tb_user.cpf, tb_payment.id AS payment_id,"
+									+ " tb_payment.description as payment_description, tb_payment.card, amount, finished,creationDate"
+									+ " from tb_request left join tb_user on tb_request.idUser = tb_user.id"
+									+ " left join tb_profile on tb_user.profileId = tb_profile.id"
+									+ " left join tb_payment on tb_request.idPayment = tb_payment.id"
+									+ " where tb_request.store = ?");
+					ps.setInt(1, storeSelected);
+					break;
+				case "Date":
+					ps = conn.prepareStatement(
+							"select tb_request.id AS id_request, tb_request.store, tb_user.id AS id_user, tb_profile.id AS id_profile,"
+									+ " tb_profile.description AS description_profile, tb_user.name as client_name,"
+									+ " tb_user.zipCode, tb_user.telephone, tb_user.cpf, tb_payment.id AS payment_id,"
+									+ " tb_payment.description as payment_description, tb_payment.card, amount, finished,creationDate"
+									+ " from tb_request left join tb_user on tb_request.idUser = tb_user.id"
+									+ " left join tb_profile on tb_user.profileId = tb_profile.id"
+									+ " left join tb_payment on tb_request.idPayment = tb_payment.id"
+									+ " where tb_request.store = ? and date(creationDate) between date(?) and date(?); ");
+					ps.setInt(1, storeSelected);
+					ps.setDate(2, new java.sql.Date(startingDate.getTime()));
+					ps.setDate(3, new java.sql.Date(finalDate.getTime()));
+					break;
+				case "NumberRequest":
+					ps = conn.prepareStatement(
+							"select tb_request.id AS id_request, tb_request.store, tb_user.id AS id_user, tb_profile.id AS id_profile,"
+									+ " tb_profile.description AS description_profile, tb_user.name as client_name,"
+									+ " tb_user.zipCode, tb_user.telephone, tb_user.cpf, tb_payment.id AS payment_id,"
+									+ " tb_payment.description as payment_description, tb_payment.card, amount, finished,creationDate"
+									+ " from tb_request left join tb_user on tb_request.idUser = tb_user.id"
+									+ " left join tb_profile on tb_user.profileId = tb_profile.id"
+									+ " left join tb_payment on tb_request.idPayment = tb_payment.id"
+									+ " where tb_request.store = ? and tb_request.id = ?");
+					ps.setInt(1, storeSelected);
+					ps.setInt(2, requestSelected);
+					break;
+			}
+
+			rs = ps.executeQuery();
 			while (rs.next()) {
 				profile = new Profile(rs.getInt("id_profile"), rs.getString("description_profile"));
 
@@ -52,6 +88,7 @@ public class RequestDB {
 						rs.getBoolean("card"));
 				request = new Request();
 				request.setId(rs.getInt("id_request"));
+				request.setStore(rs.getInt("store"));
 				request.setUser(client);
 				request.setPayment(payment);
 				request.setAmount(rs.getDouble("amount"));

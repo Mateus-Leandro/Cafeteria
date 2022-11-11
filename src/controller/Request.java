@@ -5,6 +5,7 @@ import java.util.Date;
 
 public class Request {
 	private Integer id;
+	private Integer store;
 	private User user;
 	private Payment payment;
 	private Double amount;
@@ -16,8 +17,9 @@ public class Request {
 
 	}
 
-	public Request(Integer id, User user, Payment payment, Double amount, Boolean finished, Date creationDate) {
+	public Request(Integer id, Integer store, User user, Payment payment, Double amount, Boolean finished, Date creationDate) {
 		this.id = id;
+		this.store = store;
 		this.user = user;
 		this.payment = payment;
 		this.amount = amount;
@@ -32,6 +34,15 @@ public class Request {
 
 	public void setId(Integer id) {
 		this.id = id;
+	}
+	
+
+	public Integer getStore() {
+		return store;
+	}
+
+	public void setStore(Integer store) {
+		this.store = store;
 	}
 
 	public User getUser() {
