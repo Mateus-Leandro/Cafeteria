@@ -102,6 +102,8 @@ public class Panel_request extends JPanel {
 		comboBox.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent changeTypeSearch) {
 				if (changeTypeSearch.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+					products.clear();
+					txtIdRequest.setText(null);
 					if (comboBox.getSelectedItem().equals("Data")) {
 
 						jdcStartingDate.setDate(new Date());
@@ -119,9 +121,13 @@ public class Panel_request extends JPanel {
 						lblFinalDate.setVisible(false);
 						jdcFinalDate.setVisible(false);
 						txtIdRequest.setVisible(true);
+						products.clear();
 						search_requests("All", null, null, null);
 					}
+					tableModelRequest.reloadTable(tableProductsRequest, requests);
+					tableModelProductRequest.reloadTable(tableProductsRequest, products);
 					formatTableRequest(tableProductsRequest);
+					formatTableProductsRequest(tableProductsRequest);
 				}
 			}
 		});
@@ -322,12 +328,6 @@ public class Panel_request extends JPanel {
 	}
 
 	public void searchForDate() {
-		txtIdRequest.setText(null);
 		search_requests("Date", jdcStartingDate.getDate(), jdcFinalDate.getDate(), null);
-		products.clear();
-		tableModelProductRequest.reloadTable(tableProductsRequest, products);
-		tableModelRequest.reloadTable(tableProductsRequest, requests);
-		formatTableProductsRequest(tableProductsRequest);
-		formatTableRequest(tableProductsRequest);
 	}
 }
